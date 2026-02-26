@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>45JPH单车燃动数据分析报告</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #4299e1 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #4299e1 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .summary-card h3 {
+            color: #2b6cb0;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .summary-card .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .summary-card .trend {
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .trend.up { color: #e74c3c; }
+        .trend.down { color: #27ae60; }
+        .trend.neutral { color: #f39c12; }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #4299e1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .trend-positive {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .trend-negative {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .chart-container h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .analysis {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #4299e1;
+        }
+
+        .analysis h3 {
+            color: #2b6cb0;
+            margin-bottom: 15px;
+        }
+
+        .analysis ul {
+            list-style-position: inside;
+            line-height: 2;
+        }
+
+        .analysis li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+        }
+
+        .analysis li::before {
+            content: "▸";
+            color: #4299e1;
+            margin-right: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f0f0f0;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            background: #f0f0f0;
+            border: none;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: #e0e0e0;
+        }
+
+        .tab.active {
+            background: white;
+            color: #4299e1;
+            font-weight: bold;
+            border-bottom: 3px solid #4299e1;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>45JPH单车燃动数据分析报告</h1>
+            <p>时间范围：2025年10月 - 2026年1月</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <h3>累计产量</h3>
+                <div class="value">37,544</div>
+                <div class="trend">台</div>
+            </div>
+            <div class="summary-card">
+                <h3>最高月产量</h3>
+                <div class="value">12,341</div>
+                <div class="trend up">2025年10月</div>
+            </div>
+            <div class="summary-card">
+                <h3>平均偏差率</h3>
+                <div class="value">-7.79%</div>
+                <div class="trend down">持续低于目标</div>
+            </div>
+            <div class="summary-card">
+                <h3>实际燃动均值</h3>
+                <div class="value">458</div>
+                <div class="trend">元/台</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('overview')">数据总览</button>
+                <button class="tab" onclick="switchTab('production')">产量分析</button>
+                <button class="tab" onclick="switchTab('cost')">成本分析</button>
+                <button class="tab" onclick="switchTab('trend')">趋势分析</button>
+            </div>
+
+            <div id="overview" class="tab-content active">
+                <div class="section">
+                    <h2>数据总览表</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>指标</th>
+                                <th>2025.10</th>
+                                <th>2025.11</th>
+                                <th>2025.12</th>
+                                <th>2026.1</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>月初产量</strong></td>
+                                <td>10,900</td>
+                                <td>13,468</td>
+                                <td>10,356</td>
+                                <td>4,365</td>
+                            </tr>
+                            <tr>
+                                <td><strong>实际产量</strong></td>
+                                <td>12,341</td>
+                                <td>12,318</td>
+                                <td>8,272</td>
+                                <td>4,613</td>
+                            </tr>
+                            <tr>
+                                <td><strong>预测差异</strong></td>
+                                <td class="trend-positive">+1,441</td>
+                                <td class="trend-negative">-1,150</td>
+                                <td class="trend-negative">-2,084</td>
+                                <td class="trend-positive">+248</td>
+                            </tr>
+                            <tr>
+                                <td><strong>月初目标（元/台）</strong></td>
+                                <td>366</td>
+                                <td>390</td>
+                                <td>465</td>
+                                <td>775</td>
+                            </tr>
+                            <tr>
+                                <td><strong>实际（元/台）</strong></td>
+                                <td>350</td>
+                                <td>353</td>
+                                <td>433</td>
+                                <td>695</td>
+                            </tr>
+                            <tr>
+                                <td><strong>偏差率</strong></td>
+                                <td class="trend-negative">-4.38%</td>
+                                <td class="trend-negative">-9.59%</td>
+                                <td class="trend-negative">-6.86%</td>
+                                <td class="trend-negative">-10.32%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="chart-container">
+                        <h3>全部数据趋势图</h3>
+                        <canvas id="overviewChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div id="production" class="tab-content">
+                <div class="section">
+                    <h2>产量分析</h2>
+                    <div class="chart-container">
+                        <h3>月度产量变化趋势</h3>
+                        <canvas id="productionChart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>月初预测与实际产量差异对比</h3>
+                        <canvas id="productionDiffChart"></canvas>
+                    </div>
+
+                    <div class="analysis">
+                        <h3>产量分析结论</h3>
+                        <ul>
+                            <li><strong>产量波动较大：</strong>从2025年10月的12,341台到2026年1月的4,613台，产量呈下降趋势，说明产能利用率有待提升。</li>
+                            <li><strong>预测偏差明显：</strong>10月实际产量超预测1,441台，而11-12月持续低于预测，最大偏差达-2,084台，预测准确性有待改善。</li>
+                            <li><strong>11-12月下滑：</strong>11月和12月产量持续低迷，分别比预测少1,150和2,084台，需要分析下降原因。</li>
+                            <li><strong>1月小幅回升：</strong>2026年1月实际产量略高于预测，虽然总体产量仍处低位，但显示出止跌回升的迹象。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cost" class="tab-content">
+                <div class="section">
+                    <h2>成本分析</h2>
+                    <div class="chart-container">
+                        <h3>目标vs实际单车燃动成本</h3>
+                        <canvas id="costChart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>偏差率分析</h3>
+                        <canvas id="deviationChart"></canvas>
+                    </div>
+
+                    <div class="analysis">
+                        <h3>成本分析结论</h3>
+                        <ul>
+                            <li><strong>持续低于目标：</strong>四个月的偏差率均为负值，分别为-4.38%、-9.59%、-6.86%、-10.32%，实际成本持续低于月初目标。</li>
+                            <li><strong>目标成本上涨：</strong>月初目标从366元/台增至775元/台，增幅达112%，表明对冬季能耗上升有预期。</li>
+                            <li><strong>实际成本相对稳定：</strong>实际成本从350元/台到695元/台，考虑季节性因素，燃动控制能力较好。</li>
+                            <li><strong>规模效应不明显：</strong>与60JPH厂区不同，45JPH产量低，且产量下降时成本也下降，可能与设备启停效率有关。</li>
+                            <li><strong>最佳表现：</strong>2025年11月实际值353元/台，比目标低9.59%，为四个月中表现最好的月份。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="trend" class="tab-content">
+                <div class="section">
+                    <h2>综合趋势分析</h2>
+                    <div class="chart-container">
+                        <h3>产量与成本双轴对比图</h3>
+                        <canvas id="combinedChart"></canvas>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>环比增长率分析</h3>
+                        <canvas id="growthChart"></canvas>
+                    </div>
+
+                    <div class="analysis">
+                        <h3>核心发现与建议</h3>
+                        <ul>
+                            <li><strong>产量与成本正相关：</strong>与60JPH厂区不同，45JPH产量下降时成本也下降，这可能是因为产量接近产能底部时，固定费用占比增加。</li>
+                            <li><strong>季节性成本上升：</strong>从10月（350）到2026年1月（695），实际成本翻倍，反映了冬季供暖导致的燃动成本上升。</li>
+                            <li><strong>预测系统性偏差：</strong>月初预测产量在11-12月连续高估，需要优化预测模型，考虑季节性和市场因素。</li>
+                            <li><strong>产能利用率不足：</strong>最高产量12,341台，与设计产能45JPH（约72,000台/月）相比，利用率仅17%，存在较大提升空间。</li>
+                            <li><strong>建议：</strong></li>
+                            <ul>
+                                <li>- 加强与市场的协同，提升订单量和产能利用率</li>
+                                <li>- 优化产量预测模型，提高预测准确性</li>
+                                <li>- 分析11-12月产量低迷的根本原因（市场需求？设备故障？）</li>
+                                <li>- 学习60JPH厂区的成功经验，在保证质量的前提下提升效率</li>
+                                <li>- 建立弹性机制，在低产能时控制固定成本</li>
+                            </ul>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>45JPH单车燃动数据分析报告 | 生成时间：2026年2月26日</p>
+        </div>
+    </div>
+
+    <script>
+        // 标签页切换
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // 初始化所有图表 - 等待DOM加载完成后执行
+        window.onload = function() {
+            // 数据定义
+            const months = ['2025.10', '2025.11', '2025.12', '2026.1'];
+            const predictedProduction = [10900, 13468, 10356, 4365];
+            const actualProduction = [12341, 12318, 8272, 4613];
+            const productionDiff = [1441, -1150, -2084, 248];
+            const targetCost = [366, 390, 465, 775];
+            const actualCost = [350, 353, 433, 695];
+            const deviation = [-4.38, -9.59, -6.86, -10.32];
+
+            // 图表通用配置
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: { size: 12 }
+                        }
+                    }
+                }
+            };
+
+            // 概览图表
+            new Chart(document.getElementById('overviewChart'), {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: '实际产量（台）',
+                            data: actualProduction,
+                            backgroundColor: 'rgba(66, 153, 225, 0.8)',
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '月初目标（元/台）',
+                            data: targetCost,
+                            type: 'line',
+                            borderColor: '#27ae60',
+                            backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: '实际成本（元/台）',
+                            data: actualCost,
+                            type: 'line',
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: '产量（台）' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: '成本（元/台）' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+
+            // 产量图表
+            new Chart(document.getElementById('productionChart'), {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: '月初预测产量（台）',
+                            data: predictedProduction,
+                            borderColor: '#95a5a6',
+                            backgroundColor: 'rgba(149, 165, 166, 0.1)',
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.4
+                        },
+                        {
+                            label: '实际产量（台）',
+                            data: actualProduction,
+                            borderColor: '#4299e1',
+                            backgroundColor: 'rgba(66, 153, 225, 0.2)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: commonOptions
+            });
+
+            // 产量差异图表
+            new Chart(document.getElementById('productionDiffChart'), {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: '预测差异（台）',
+                        data: productionDiff,
+                        backgroundColor: productionDiff.map(d => d >= 0 ? 'rgba(231, 76, 60, 0.7)' : 'rgba(39, 174, 96, 0.7)')
+                    }]
+                },
+                options: commonOptions
+            });
+
+            // 成本对比图表
+            new Chart(document.getElementById('costChart'), {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: '月初目标（元/台）',
+                            data: targetCost,
+                            backgroundColor: 'rgba(39, 174, 96, 0.7)'
+                        },
+                        {
+                            label: '实际（元/台）',
+                            data: actualCost,
+                            backgroundColor: 'rgba(66, 153, 225, 0.7)'
+                        }
+                    ]
+                },
+                options: commonOptions
+            });
+
+            // 偏差率图表
+            new Chart(document.getElementById('deviationChart'), {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: '偏差率 (%)',
+                        data: deviation,
+                        backgroundColor: deviation.map(d => d >= 0 ? 'rgba(231, 76, 60, 0.7)' : 'rgba(39, 174, 96, 0.7)')
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 综合对比图表
+            new Chart(document.getElementById('combinedChart'), {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: '实际产量（台）',
+                            data: actualProduction,
+                            borderColor: '#4299e1',
+                            backgroundColor: 'rgba(66, 153, 225, 0.1)',
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '实际成本（元/台）',
+                            data: actualCost,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: '产量（台）' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: '成本（元/台）' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+
+            // 增长率图表
+            const productionGrowth = Array(4).fill(0);
+            const costGrowth = Array(4).fill(0);
+            for (let i = 1; i < 4; i++) {
+                productionGrowth[i] = ((actualProduction[i] - actualProduction[i-1]) / actualProduction[i-1] * 100).toFixed(1);
+                costGrowth[i] = ((actualCost[i] - actualCost[i-1]) / actualCost[i-1] * 100).toFixed(1);
+            }
+
+            new Chart(document.getElementById('growthChart'), {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: '产量环比增长率 (%)',
+                            data: productionGrowth,
+                            borderColor: '#4299e1',
+                            backgroundColor: 'rgba(66, 153, 225, 0.1)',
+                            fill: true
+                        },
+                        {
+                            label: '成本环比变化率 (%)',
+                            data: costGrowth,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+</html>
