@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- saved from url=(0094)file:///C:/Users/dingzhonghua/60JPH%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A.html -->
-<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>60JPH单车燃动数据分析报告</title>
-    <script src="./60JPH单车燃动数据分析报告_files/chart.js.下载"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -243,23 +243,23 @@
                 <div class="trend up">2026年1月</div>
             </div>
             <div class="summary-card">
+                <h3>产量增长率</h3>
+                <div class="value">242.1%</div>
+                <div class="trend up">从10月到1月</div>
+            </div>
+            <div class="summary-card">
                 <h3>平均偏差率</h3>
                 <div class="value">-3.36%</div>
                 <div class="trend down">整体表现良好</div>
-            </div>
-            <div class="summary-card">
-                <h3>实际燃动均值</h3>
-                <div class="value">682</div>
-                <div class="trend">元/台</div>
             </div>
         </div>
 
         <div class="content">
             <div class="tabs">
-                <button class="tab active" onclick="switchTab(&#39;overview&#39;)">数据总览</button>
-                <button class="tab" onclick="switchTab(&#39;production&#39;)">产量分析</button>
-                <button class="tab" onclick="switchTab(&#39;cost&#39;)">成本分析</button>
-                <button class="tab" onclick="switchTab(&#39;trend&#39;)">趋势分析</button>
+                <button class="tab active" onclick="switchTab('overview')">数据总览</button>
+                <button class="tab" onclick="switchTab('production')">产量分析</button>
+                <button class="tab" onclick="switchTab('cost')">成本分析</button>
+                <button class="tab" onclick="switchTab('trend')">趋势分析</button>
             </div>
 
             <div id="overview" class="tab-content active">
@@ -309,7 +309,7 @@
 
                     <div class="chart-container">
                         <h3>全部数据趋势图</h3>
-                        <canvas id="overviewChart" width="1650" height="825" style="display: block; box-sizing: border-box; height: 550px; width: 1100px;"></canvas>
+                        <canvas id="overviewChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -319,13 +319,13 @@
                     <h2>产量分析</h2>
                     <div class="chart-container">
                         <h3>月度产量变化趋势</h3>
-                        <canvas id="productionChart" height="825" style="display: block; box-sizing: border-box; height: 550px; width: 1100px;" width="1650"></canvas>
+                        <canvas id="productionChart"></canvas>
                     </div>
 
                     <div class="analysis">
                         <h3>产量分析结论</h3>
                         <ul>
-                            <li><strong>产量持续增长：</strong>从2025年10月的5,326台增长到2026年1月的18,216台，说明产能利用率显著提升。</li>
+                            <li><strong>产量持续增长：</strong>从2025年10月的5,326台增长到2026年1月的18,216台，增长242.1%，说明产能利用率显著提升。</li>
                             <li><strong>12月突破：</strong>2025年12月产量达到16,565台，环比增长89.3%，实现跨越式增长。</li>
                             <li><strong>1月稳定增长：</strong>2026年1月继续增长至18,216台，环比增长10%，展现良好的产能扩张势头。</li>
                             <li><strong>产能爬坡顺利：</strong>四个月内产量实现了3.4倍的提升，说明生产线运行稳定高效。</li>
@@ -339,12 +339,12 @@
                     <h2>成本分析</h2>
                     <div class="chart-container">
                         <h3>目标vs实际单车燃动成本</h3>
-                        <canvas id="costChart" height="825" style="display: block; box-sizing: border-box; height: 550px; width: 1100px;" width="1650"></canvas>
+                        <canvas id="costChart"></canvas>
                     </div>
 
                     <div class="chart-container">
                         <h3>偏差率分析</h3>
-                        <canvas id="deviationChart" height="825" style="display: block; box-sizing: border-box; height: 550px; width: 1100px;" width="1650"></canvas>
+                        <canvas id="deviationChart"></canvas>
                     </div>
 
                     <div class="analysis">
@@ -365,12 +365,12 @@
                     <h2>综合趋势分析</h2>
                     <div class="chart-container">
                         <h3>产量与成本双轴对比图</h3>
-                        <canvas id="combinedChart" height="825" style="display: block; box-sizing: border-box; height: 550px; width: 1100px;" width="1650"></canvas>
+                        <canvas id="combinedChart"></canvas>
                     </div>
 
                     <div class="chart-container">
                         <h3>环比增长率分析</h3>
-                        <canvas id="growthChart" height="825" style="display: block; box-sizing: border-box; height: 550px; width: 1100px;" width="1650"></canvas>
+                        <canvas id="growthChart"></canvas>
                     </div>
 
                     <div class="analysis">
@@ -620,6 +620,5 @@
             }
         });
     </script>
-
-
-</body></html>
+</body>
+</html>
